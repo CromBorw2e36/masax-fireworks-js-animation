@@ -1,5 +1,7 @@
 # Fireworks JS Animation (Pháo Hoa JS) 🎆
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
+
 Một thư viện hiệu ứng pháo hoa nhẹ, không phụ thuộc, và dễ dàng tùy biến. Hoạt động mượt mà trên **Vanilla JS**, **React**, **Vue**, **Angular**, v.v.
 
 A lightweight, zero-dependency, and highly customizable fireworks animation library. Works seamlessly with **Vanilla JS**, **React**, **Vue**, **Angular**, and more.
@@ -23,7 +25,7 @@ A lightweight, zero-dependency, and highly customizable fireworks animation libr
 ### Cài đặt
 
 ```bash
-npm install fireworks-js-animation
+npm install masax-fireworks-js-animation
 ```
 
 ### Hướng dẫn sử dụng
@@ -61,7 +63,7 @@ Sử dụng `useEffect` và `useRef` để khởi tạo pháo hoa khi component 
 
 ```jsx
 import React, { useEffect, useRef } from "react";
-import { Fireworks } from "fireworks-js-animation";
+import { Fireworks } from "masax-fireworks-js-animation";
 
 const FireworksComponent = () => {
   const canvasRef = useRef(null);
@@ -81,6 +83,49 @@ const FireworksComponent = () => {
 export default FireworksComponent;
 ```
 
+#### 3. Vue 3
+
+```vue
+<template>
+  <canvas ref="canvasRef" style="width: 100%; height: 100vh;"></canvas>
+</template>
+
+<script setup>
+import { onMounted, onUnmounted, ref } from "vue";
+import { Fireworks } from "masax-fireworks-js-animation";
+
+const canvasRef = ref(null);
+let fireworks = null;
+
+onMounted(() => {
+  if (canvasRef.value) {
+    fireworks = new Fireworks(canvasRef.value, {
+      /* options */
+    });
+    fireworks.start();
+  }
+});
+
+onUnmounted(() => {
+  if (fireworks) fireworks.stop();
+});
+</script>
+```
+
+#### 4. TypeScript
+
+```typescript
+import { Fireworks } from "masax-fireworks-js-animation";
+
+const container = document.getElementById("fireworks-canvas") as HTMLElement;
+const fireworks = new Fireworks(container, {
+  particles: 50,
+  traceSpeed: 2,
+});
+
+fireworks.start();
+```
+
 ---
 
 ## <a id="english"></a>English
@@ -88,7 +133,7 @@ export default FireworksComponent;
 ### Installation
 
 ```bash
-npm install fireworks-js-animation
+npm install masax-fireworks-js-animation
 ```
 
 ### Usage
@@ -116,7 +161,7 @@ npm install fireworks-js-animation
 
 ```jsx
 import React, { useEffect, useRef } from "react";
-import { Fireworks } from "fireworks-js-animation";
+import { Fireworks } from "masax-fireworks-js-animation";
 
 const FireworksComponent = () => {
   const canvasRef = useRef(null);
@@ -149,7 +194,7 @@ export default FireworksComponent;
 
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
-import { Fireworks } from "fireworks-js-animation";
+import { Fireworks } from "masax-fireworks-js-animation";
 
 const canvasRef = ref(null);
 let fireworks = null;
@@ -169,6 +214,20 @@ onUnmounted(() => {
 </script>
 ```
 
+#### 4. TypeScript
+
+```typescript
+import { Fireworks } from "masax-fireworks-js-animation";
+
+const container = document.getElementById("fireworks-canvas") as HTMLElement;
+const fireworks = new Fireworks(container, {
+  particles: 50,
+  traceSpeed: 2,
+});
+
+fireworks.start();
+```
+
 ---
 
 ## <a id="中文-chinese"></a>中文 (Chinese)
@@ -176,7 +235,7 @@ onUnmounted(() => {
 ### 安装
 
 ```bash
-npm install fireworks-js-animation
+npm install masax-fireworks-js-animation
 ```
 
 ### 使用方法
@@ -199,7 +258,31 @@ npm install fireworks-js-animation
 </script>
 ```
 
-#### 2. Vue 3 Setup
+#### 2. React
+
+```jsx
+import React, { useEffect, useRef } from "react";
+import { Fireworks } from "masax-fireworks-js-animation";
+
+const FireworksComponent = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      const fireworks = new Fireworks(canvasRef.current, {
+        /* 配置项 */
+      });
+      fireworks.start();
+      return () => fireworks.stop(); // 清理
+    }
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ width: "100%", height: "100vh" }} />;
+};
+export default FireworksComponent;
+```
+
+#### 3. Vue 3 Setup
 
 ```vue
 <template>
@@ -208,7 +291,7 @@ npm install fireworks-js-animation
 
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
-import { Fireworks } from "fireworks-js-animation";
+import { Fireworks } from "masax-fireworks-js-animation";
 
 const canvasRef = ref(null);
 let fireworks = null;
@@ -226,6 +309,20 @@ onUnmounted(() => {
   if (fireworks) fireworks.stop();
 });
 </script>
+```
+
+#### 4. TypeScript
+
+```typescript
+import { Fireworks } from "masax-fireworks-js-animation";
+
+const container = document.getElementById("fireworks-canvas") as HTMLElement;
+const fireworks = new Fireworks(container, {
+  particles: 50,
+  traceSpeed: 2,
+});
+
+fireworks.start();
 ```
 
 ---
