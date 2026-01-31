@@ -1,37 +1,24 @@
-declare module 'masax-fireworks-js-animation' {
-  export interface MinMax {
-    min: number;
-    max: number;
-  }
+export class Fireworks {
+    constructor(target: HTMLElement | HTMLCanvasElement, options?: FireworksOptions);
+    
+    get isRunning(): boolean;
+    get version(): string;
+    get currentOptions(): FireworksOptions;
+    
+    start(): void;
+    stop(removeCanvas?: boolean): void;
+    waitStop(removeCanvas?: boolean): Promise<void>;
+    pause(): void;
+    clear(): void;
+    launch(count?: number): void;
+    updateOptions(options: FireworksOptions): void;
+    updateSize(size?: { width?: number; height?: number }): void;
+    updateBoundaries(boundaries: BoundaryOptions): void;
+}
 
-  export interface MouseOptions {
-    click?: boolean;
-    move?: boolean;
-    max?: number;
-  }
-
-  export interface SoundOptions {
-    enabled?: boolean;
-    files?: string[];
-    volume?: MinMax;
-  }
-
-  export interface LineWidthOptions {
-    explosion?: MinMax;
-    trace?: MinMax;
-  }
-
-  export interface BoundaryOptions {
-    debug?: boolean;
-    height?: number;
-    width?: number;
-    x?: number;
-    y?: number;
-  }
-
-  export interface FireworksOptions {
+export interface FireworksOptions {
     autoresize?: boolean;
-    lineStyle?: 'round' | 'square';
+    lineStyle?: "round" | "square" | "butt";
     flickering?: number;
     traceLength?: number;
     traceSpeed?: number;
@@ -42,34 +29,21 @@ declare module 'masax-fireworks-js-animation' {
     particles?: number;
     friction?: number;
     acceleration?: number;
-    hue?: MinMax;
-    rocketsPoint?: MinMax;
-    lineWidth?: LineWidthOptions;
-    mouse?: MouseOptions;
-    delay?: MinMax;
-    brightness?: MinMax;
-    decay?: MinMax;
-    sound?: SoundOptions;
+    hue?: { min: number; max: number };
+    rocketsPoint?: { min: number; max: number };
+    lineWidth?: { explosion: { min: number; max: number }; trace: { min: number; max: number } };
+    mouse?: { click?: boolean; move?: boolean; max?: number };
+    delay?: { min: number; max: number };
+    brightness?: { min: number; max: number };
+    decay?: { min: number; max: number };
+    sound?: { enabled?: boolean; files?: string[]; volume?: { min: number; max: number } };
     boundaries?: BoundaryOptions;
-  }
+}
 
-  export class Fireworks {
-    constructor(target: Element | string, options?: FireworksOptions);
-    
-    readonly isRunning: boolean;
-    readonly version: string;
-    readonly currentOptions: FireworksOptions;
-
-    start(): void;
-    stop(remove?: boolean): void;
-    waitStop(remove?: boolean): Promise<void>;
-    pause(): void;
-    clear(): void;
-    launch(count?: number): void;
-    updateOptions(options: FireworksOptions): void;
-    updateSize(size?: { width?: number; height?: number }): void;
-    updateBoundaries(boundaries: BoundaryOptions): void;
-  }
-
-  export default Fireworks;
+export interface BoundaryOptions {
+    debug?: boolean;
+    height?: number;
+    width?: number;
+    x?: number;
+    y?: number;
 }

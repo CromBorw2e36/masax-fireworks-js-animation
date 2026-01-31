@@ -1,3 +1,18 @@
+/**
+ * Fireworks.js - A lightweight, high-performance 2D fireworks animation library for the web.
+ * 
+ * Features:
+ * - Canvas-based 2D fireworks effects
+ * - Multiple explosion types with customizable parameters
+ * - Mouse interaction for triggering fireworks
+ * - Sound effects for explosions
+ * - Automatic canvas resizing and performance optimization
+ * - ES6 class-based architecture with modular design
+ * 
+ * @author Masax
+ * @version 1.1.3
+ * @license MIT
+ */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         define([], factory);
@@ -9,197 +24,551 @@
 }(typeof self !== 'undefined' ? self : this, function () {
     "use strict";
 
-// Utils
-function absFloor(t) { return Math.abs(Math.floor(t)) }
-function randomFloat(t, e) { return Math.random() * (e - t) + t }
-function randomInt(t, e) { return Math.floor(randomFloat(t, e + 1)) }
-function calculateDistance(t, e, i, s) { let n = Math.pow; return Math.sqrt(n(t - i, 2) + n(e - s, 2)) }
-function hsla(t, e, i = 1) {
-    if (t > 360 || t < 0) throw Error(`Expected hue 0-360 range, got \`${t}\``);
-    if (e > 100 || e < 0) throw Error(`Expected lightness 0-100 range, got \`${e}\``);
-    if (i > 1 || i < 0) throw Error(`Expected alpha 0-1 range, got \`${i}\``);
-    return `hsla(${t}, 100%, ${e}%, ${i})`
-}
-let isObject = t => {
-    if ("object" == typeof t && null !== t) {
-        if ("function" == typeof Object.getPrototypeOf) {
-            let e = Object.getPrototypeOf(t);
-            return e === Object.prototype || null === e
+    // Utils
+    function absFloor(num) {
+        return Math.abs(Math.floor(num));
+    }
+
+    function randomFloat(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function randomInt(min, max) {
+        return Math.floor(randomFloat(min, max + 1));
+    }
+
+    function calculateDistance(x1, y1, x2, y2) {
+        let pow = Math.pow;
+        return Math.sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+    }
+
+    function hsla(hue, lightness, alpha = 1) {
+        if (hue > 360 || hue < 0) throw Error(`Expected hue 0-360 range, got \`${hue}\``);
+        if (lightness > 100 || lightness < 0) throw Error(`Expected lightness 0-100 range, got \`${lightness}\``);
+        if (alpha > 1 || alpha < 0) throw Error(`Expected alpha 0-1 range, got \`${alpha}\``);
+        return `hsla(${hue}, 100%, ${lightness}%, ${alpha})`;
+    }
+
+    let isObject = (item) => {
+        if ("object" == typeof item && null !== item) {
+            if ("function" == typeof Object.getPrototypeOf) {
+                let proto = Object.getPrototypeOf(item);
+                return proto === Object.prototype || null === proto;
+            }
+            return "[object Object]" === Object.prototype.toString.call(item);
         }
-        return "[object Object]" === Object.prototype.toString.call(t)
-    }
-    return !1
-}
-let protectedKeys = ["__proto__", "constructor", "prototype"];
-let deepMerge = (...t) => t.reduce((t, e) => (Object.keys(e).forEach(i => {
-    protectedKeys.includes(i) || (Array.isArray(t[i]) && Array.isArray(e[i]) ? t[i] = e[i] : isObject(t[i]) && isObject(e[i]) ? t[i] = deepMerge(t[i], e[i]) : t[i] = e[i])
-}), t), {});
+        return false;
+    };
 
-// Classes
-class Explosion {
-    constructor({ x: t, y: e, ctx: i, hue: s, decay: n, gravity: a, friction: h, brightness: c, flickering: u, lineWidth: l, explosionLength: p }) {
-        for (this.x = t, this.y = e, this.ctx = i, this.hue = s, this.gravity = a, this.friction = h, this.flickering = u, this.lineWidth = l, this.explosionLength = p, this.angle = randomFloat(0, 2 * Math.PI), this.speed = randomInt(1, 10), this.brightness = randomInt(c.min, c.max), this.decay = randomFloat(n.min, n.max); this.explosionLength--;) this.coordinates.push([t, e])
-    }
-    x; y; ctx; hue; friction; gravity; flickering; lineWidth; explosionLength; angle; speed; brightness; coordinates = []; decay; alpha = 1;
-    update(t) {
-        this.coordinates.pop(), this.coordinates.unshift([this.x, this.y]), this.speed *= this.friction, this.x += Math.cos(this.angle) * this.speed, this.y += Math.sin(this.angle) * this.speed + this.gravity, this.alpha -= this.decay, this.alpha <= this.decay && t()
-    }
-    draw() {
-        let t = this.coordinates.length - 1;
-        this.ctx.beginPath(), this.ctx.lineWidth = this.lineWidth, this.ctx.fillStyle = hsla(this.hue, this.brightness, this.alpha), this.ctx.moveTo(this.coordinates[t][0], this.coordinates[t][1]), this.ctx.lineTo(this.x, this.y), this.ctx.strokeStyle = hsla(this.hue, this.flickering ? randomFloat(0, this.brightness) : this.brightness, this.alpha), this.ctx.stroke()
-    }
-}
+    let protectedKeys = ["__proto__", "constructor", "prototype"];
+    let deepMerge = (...objects) => objects.reduce((acc, obj) => (Object.keys(obj).forEach(key => {
+        protectedKeys.includes(key) || (Array.isArray(acc[key]) && Array.isArray(obj[key]) ? acc[key] = obj[key] : isObject(acc[key]) && isObject(obj[key]) ? acc[key] = deepMerge(acc[key], obj[key]) : acc[key] = obj[key])
+    }), acc), {});
 
-class Mouse {
-    constructor(t, e) {
-        this.options = t, this.canvas = e, this.pointerDown = this.pointerDown.bind(this), this.pointerUp = this.pointerUp.bind(this), this.pointerMove = this.pointerMove.bind(this)
-    }
-    active = !1; x; y;
-    get mouseOptions() { return this.options.mouse }
-    mount() {
-        this.canvas.addEventListener("pointerdown", this.pointerDown), this.canvas.addEventListener("pointerup", this.pointerUp), this.canvas.addEventListener("pointermove", this.pointerMove)
-    }
-    unmount() {
-        this.canvas.removeEventListener("pointerdown", this.pointerDown), this.canvas.removeEventListener("pointerup", this.pointerUp), this.canvas.removeEventListener("pointermove", this.pointerMove)
-    }
-    usePointer(t, e) {
-        let { click: i, move: s } = this.mouseOptions;
-        (i || s) && (this.x = t.pageX - this.canvas.offsetLeft, this.y = t.pageY - this.canvas.offsetTop, this.active = e)
-    }
-    pointerDown(t) { this.usePointer(t, this.mouseOptions.click) }
-    pointerUp(t) { this.usePointer(t, !1) }
-    pointerMove(t) { this.usePointer(t, this.active) }
-}
+    // Classes
+    class Explosion {
+        constructor({ x, y, ctx, hue, decay, gravity, friction, brightness, flickering, lineWidth, explosionLength }) {
+            this.x = x;
+            this.y = y;
+            this.ctx = ctx;
+            this.hue = hue;
+            this.gravity = gravity;
+            this.friction = friction;
+            this.flickering = flickering;
+            this.lineWidth = lineWidth;
+            this.explosionLength = explosionLength;
+            this.angle = randomFloat(0, 2 * Math.PI);
+            this.speed = randomInt(1, 10);
+            this.brightness = randomInt(brightness.min, brightness.max);
+            this.decay = randomFloat(decay.min, decay.max);
+            this.coordinates = [];
+            this.alpha = 1;
+            while (this.explosionLength--) {
+                this.coordinates.push([x, y]);
+            }
+        }
+        
+        update(callback) {
+            this.coordinates.pop();
+            this.coordinates.unshift([this.x, this.y]);
+            this.speed *= this.friction;
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed + this.gravity;
+            this.alpha -= this.decay;
+            if (this.alpha <= this.decay) {
+                callback();
+            }
+        }
 
-class Options {
-    constructor() {
-        this.autoresize = !0, this.lineStyle = "round", this.flickering = 50, this.traceLength = 3, this.traceSpeed = 10, this.intensity = 30, this.explosion = 5, this.gravity = 1.5, this.opacity = .5, this.particles = 50, this.friction = .95, this.acceleration = 1.05, this.hue = { min: 0, max: 360 }, this.rocketsPoint = { min: 50, max: 50 }, this.lineWidth = { explosion: { min: 1, max: 3 }, trace: { min: 1, max: 2 } }, this.mouse = { click: !1, move: !1, max: 1 }, this.delay = { min: 30, max: 60 }, this.brightness = { min: 50, max: 80 }, this.decay = { min: .015, max: .03 }, this.sound = { enabled: !1, files: ["explosion0.mp3", "explosion1.mp3", "explosion2.mp3"], volume: { min: 4, max: 8 } }, this.boundaries = { debug: !1, height: 0, width: 0, x: 50, y: 50 }
+        draw() {
+            let lastIndex = this.coordinates.length - 1;
+            this.ctx.beginPath();
+            this.ctx.lineWidth = this.lineWidth;
+            this.ctx.fillStyle = hsla(this.hue, this.brightness, this.alpha);
+            this.ctx.moveTo(this.coordinates[lastIndex][0], this.coordinates[lastIndex][1]);
+            this.ctx.lineTo(this.x, this.y);
+            this.ctx.strokeStyle = hsla(this.hue, this.flickering ? randomFloat(0, this.brightness) : this.brightness, this.alpha);
+            this.ctx.stroke();
+        }
     }
-    hue; rocketsPoint; opacity; acceleration; friction; gravity; particles; explosion; mouse; boundaries; sound; delay; brightness; decay; flickering; intensity; traceLength; traceSpeed; lineWidth; lineStyle; autoresize;
-    update(t) { Object.assign(this, deepMerge(this, t)) }
-}
 
-class Raf {
-    constructor(t, e) { this.options = t, this.render = e }
-    tick = 0; rafId = 0; fps = 60; tolerance = .1; now;
-    mount() {
-        this.now = performance.now();
-        let t = 1e3 / this.fps,
-            e = i => {
-                this.rafId = requestAnimationFrame(e);
-                let s = i - this.now;
-                s >= t - this.tolerance && (this.render(), this.now = i - s % t, this.tick += s * (this.options.intensity * Math.PI) / 1e3)
+    class Mouse {
+        constructor(options, canvas) {
+            this.options = options;
+            this.canvas = canvas;
+            this.pointerDown = this.pointerDown.bind(this);
+            this.pointerUp = this.pointerUp.bind(this);
+            this.pointerMove = this.pointerMove.bind(this);
+        }
+        active = false;
+        x;
+        y;
+        get mouseOptions() {
+            return this.options.mouse;
+        }
+        mount() {
+            this.canvas.addEventListener("pointerdown", this.pointerDown);
+            this.canvas.addEventListener("pointerup", this.pointerUp);
+            this.canvas.addEventListener("pointermove", this.pointerMove);
+        }
+        unmount() {
+            this.canvas.removeEventListener("pointerdown", this.pointerDown);
+            this.canvas.removeEventListener("pointerup", this.pointerUp);
+            this.canvas.removeEventListener("pointermove", this.pointerMove);
+        }
+        usePointer(event, active) {
+            let { click, move } = this.mouseOptions;
+            if (click || move) {
+                this.x = event.pageX - this.canvas.offsetLeft;
+                this.y = event.pageY - this.canvas.offsetTop;
+                this.active = active;
+            }
+        }
+        pointerDown(event) {
+            this.usePointer(event, this.mouseOptions.click);
+        }
+        pointerUp(event) {
+            this.usePointer(event, false);
+        }
+        pointerMove(event) {
+            this.usePointer(event, this.active);
+        }
+    }
+
+    class Options {
+        constructor() {
+            this.autoresize = true;
+            this.lineStyle = "round";
+            this.flickering = 50;
+            this.traceLength = 3;
+            this.traceSpeed = 10;
+            this.intensity = 30;
+            this.explosion = 5;
+            this.gravity = 1.5;
+            this.opacity = 0.5;
+            this.particles = 50;
+            this.friction = 0.95;
+            this.acceleration = 1.05;
+            this.hue = { min: 0, max: 360 };
+            this.rocketsPoint = { min: 50, max: 50 };
+            this.lineWidth = { explosion: { min: 1, max: 3 }, trace: { min: 1, max: 2 } };
+            this.mouse = { click: false, move: false, max: 1 };
+            this.delay = { min: 30, max: 60 };
+            this.brightness = { min: 50, max: 80 };
+            this.decay = { min: 0.015, max: 0.03 };
+            this.sound = { enabled: false, files: ["explosion0.mp3", "explosion1.mp3", "explosion2.mp3"], volume: { min: 4, max: 8 } };
+            this.boundaries = { debug: false, height: 0, width: 0, x: 50, y: 50 };
+        }
+        
+        update(options) {
+            Object.assign(this, deepMerge(this, options));
+        }
+    }
+
+    class Raf {
+        constructor(options, renderCallback) {
+            this.options = options;
+            this.render = renderCallback;
+        }
+        tick = 0;
+        rafId = 0;
+        fps = 60;
+        tolerance = 0.1;
+        now;
+        
+        mount() {
+            this.now = performance.now();
+            let interval = 1000 / this.fps;
+            let loop = (timestamp) => {
+                this.rafId = requestAnimationFrame(loop);
+                let delta = timestamp - this.now;
+                if (delta >= interval - this.tolerance) {
+                    this.render();
+                    this.now = timestamp - delta % interval;
+                    this.tick += delta * (this.options.intensity * Math.PI) / 1000;
+                }
             };
-        this.rafId = requestAnimationFrame(e)
-    }
-    unmount() { cancelAnimationFrame(this.rafId) }
-}
-
-class Resize {
-    constructor(t, e, i) { this.options = t, this.updateSize = e, this.container = i }
-    resizer;
-    mount() {
-        if (!this.resizer) {
-            var t;
-            let e, i = (t = () => this.updateSize(), (...i) => { e && clearTimeout(e), e = setTimeout(() => t(...i), 100) });
-            this.resizer = new ResizeObserver(i)
+            this.rafId = requestAnimationFrame(loop);
         }
-        this.options.autoresize && this.resizer.observe(this.container)
-    }
-    unmount() { this.resizer && this.resizer.unobserve(this.container) }
-}
-
-class Sound {
-    constructor(t) { this.options = t, this.init() }
-    buffers = []; audioContext; onInit = !1;
-    get isEnabled() { return this.options.sound.enabled }
-    get soundOptions() { return this.options.sound }
-    init() { !this.onInit && this.isEnabled && (this.onInit = !0, this.audioContext = new(window.AudioContext || window.webkitAudioContext), this.loadSounds()) }
-    async loadSounds() {
-        for (let t of this.soundOptions.files) {
-            let e = await (await fetch(t)).arrayBuffer();
-            this.audioContext.decodeAudioData(e).then(t => { this.buffers.push(t) }).catch(t => { throw t })
+        
+        unmount() {
+            cancelAnimationFrame(this.rafId);
         }
     }
-    play() {
-        if (this.isEnabled && this.buffers.length) {
-            let t = this.audioContext.createBufferSource(),
-                e = this.buffers[randomInt(0, this.buffers.length - 1)],
-                i = this.audioContext.createGain();
-            t.buffer = e, i.gain.value = randomFloat(this.soundOptions.volume.min / 100, this.soundOptions.volume.max / 100), i.connect(this.audioContext.destination), t.connect(i), t.start(0)
-        } else this.init()
-    }
-}
 
-class Trace {
-    constructor({ x: t, y: e, dx: i, dy: s, ctx: n, hue: r, speed: h, traceLength: c, acceleration: u }) {
-        for (this.x = t, this.y = e, this.sx = t, this.sy = e, this.dx = i, this.dy = s, this.ctx = n, this.hue = r, this.speed = h, this.traceLength = c, this.acceleration = u, this.totalDistance = calculateDistance(t, e, i, s), this.angle = Math.atan2(s - e, i - t), this.brightness = randomInt(50, 70); this.traceLength--;) this.coordinates.push([t, e])
+    class Resize {
+        constructor(options, updateSizeCallback, container) {
+            this.options = options;
+            this.updateSize = updateSizeCallback;
+            this.container = container;
+        }
+        resizer;
+        
+        mount() {
+            if (!this.resizer) {
+                let timer;
+                const debouncedResize = (...args) => {
+                    timer && clearTimeout(timer);
+                    timer = setTimeout(() => this.updateSize(...args), 100);
+                };
+                this.resizer = new ResizeObserver(debouncedResize);
+            }
+            if (this.options.autoresize) {
+                this.resizer.observe(this.container);
+            }
+        }
+        
+        unmount() {
+            if (this.resizer) {
+                this.resizer.unobserve(this.container);
+            }
+        }
     }
-    x; y; sx; sy; dx; dy; ctx; hue; speed; acceleration; traceLength; totalDistance; angle; brightness; coordinates = []; currentDistance = 0;
-    update(t) {
-        this.coordinates.pop(), this.coordinates.unshift([this.x, this.y]), this.speed *= this.acceleration;
-        let e = Math.cos(this.angle) * this.speed,
-            i = Math.sin(this.angle) * this.speed;
-        this.currentDistance = calculateDistance(this.sx, this.sy, this.x + e, this.y + i), this.currentDistance >= this.totalDistance ? t(this.dx, this.dy, this.hue) : (this.x += e, this.y += i)
-    }
-    draw() {
-        let t = this.coordinates.length - 1;
-        this.ctx.beginPath(), this.ctx.moveTo(this.coordinates[t][0], this.coordinates[t][1]), this.ctx.lineTo(this.x, this.y), this.ctx.strokeStyle = hsla(this.hue, this.brightness), this.ctx.stroke()
-    }
-}
 
-class Fireworks {
-    constructor(t, e = {}) {
-        this.target = t, this.container = t, this.opts = new Options, this.createCanvas(this.target), this.updateOptions(e), this.sound = new Sound(this.opts), this.resize = new Resize(this.opts, this.updateSize.bind(this), this.container), this.mouse = new Mouse(this.opts, this.canvas), this.raf = new Raf(this.opts, this.render.bind(this))
+    class Sound {
+        constructor(options) {
+            this.options = options;
+            this.init();
+        }
+        buffers = [];
+        audioContext;
+        onInit = false;
+        
+        get isEnabled() {
+            return this.options.sound.enabled;
+        }
+        get soundOptions() {
+            return this.options.sound;
+        }
+        
+        init() {
+            if (!this.onInit && this.isEnabled) {
+                this.onInit = true;
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.loadSounds();
+            }
+        }
+        
+        async loadSounds() {
+            for (let file of this.soundOptions.files) {
+                try {
+                    let response = await fetch(file);
+                    let arrayBuffer = await response.arrayBuffer();
+                    let decodedBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    this.buffers.push(decodedBuffer);
+                } catch (error) {
+                    console.error("Failed to load sound:", file, error);
+                }
+            }
+        }
+        
+        play() {
+            if (this.isEnabled && this.buffers.length) {
+                let source = this.audioContext.createBufferSource();
+                let buffer = this.buffers[randomInt(0, this.buffers.length - 1)];
+                let gainNode = this.audioContext.createGain();
+                
+                source.buffer = buffer;
+                gainNode.gain.value = randomFloat(this.soundOptions.volume.min / 100, this.soundOptions.volume.max / 100);
+                
+                gainNode.connect(this.audioContext.destination);
+                source.connect(gainNode);
+                source.start(0);
+            } else {
+                this.init();
+            }
+        }
     }
-    target; container; canvas; ctx; width; height; traces = []; explosions = []; waitStopRaf; running = !1; opts; sound; resize; mouse; raf;
-    get isRunning() { return this.running }
-    get version() { return "2.10.8" }
-    get currentOptions() { return this.opts }
-    start() { this.running || (this.canvas.isConnected || this.createCanvas(this.target), this.running = !0, this.resize.mount(), this.mouse.mount(), this.raf.mount()) }
-    stop(t = !1) { this.running && (this.running = !1, this.resize.unmount(), this.mouse.unmount(), this.raf.unmount(), this.clear(), t && this.canvas.remove()) }
-    async waitStop(t) {
-        if (this.running) return new Promise(e => {
-            this.waitStopRaf = () => { this.waitStopRaf && (requestAnimationFrame(this.waitStopRaf), this.traces.length || this.explosions.length || (this.waitStopRaf = null, this.stop(t), e())) }, this.waitStopRaf()
-        })
+
+    class Trace {
+        constructor({ x, y, dx, dy, ctx, hue, speed, traceLength, acceleration }) {
+            this.x = x;
+            this.y = y;
+            this.sx = x;
+            this.sy = y;
+            this.dx = dx;
+            this.dy = dy;
+            this.ctx = ctx;
+            this.hue = hue;
+            this.speed = speed;
+            this.traceLength = traceLength;
+            this.acceleration = acceleration;
+            this.totalDistance = calculateDistance(x, y, dx, dy);
+            this.angle = Math.atan2(dy - y, dx - x);
+            this.brightness = randomInt(50, 70);
+            this.coordinates = [];
+            this.currentDistance = 0;
+            while (this.traceLength--) {
+                this.coordinates.push([x, y]);
+            }
+        }
+        
+        update(callback) {
+            this.coordinates.pop();
+            this.coordinates.unshift([this.x, this.y]);
+            this.speed *= this.acceleration;
+            let vx = Math.cos(this.angle) * this.speed;
+            let vy = Math.sin(this.angle) * this.speed;
+            
+            this.currentDistance = calculateDistance(this.sx, this.sy, this.x + vx, this.y + vy);
+            
+            if (this.currentDistance >= this.totalDistance) {
+                callback(this.dx, this.dy, this.hue);
+            } else {
+                this.x += vx;
+                this.y += vy;
+            }
+        }
+        
+        draw() {
+            let lastIndex = this.coordinates.length - 1;
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.coordinates[lastIndex][0], this.coordinates[lastIndex][1]);
+            this.ctx.lineTo(this.x, this.y);
+            this.ctx.strokeStyle = hsla(this.hue, this.brightness);
+            this.ctx.stroke();
+        }
     }
-    pause() { this.running = !this.running, this.running ? this.raf.mount() : this.raf.unmount() }
-    clear() { this.ctx && (this.traces = [], this.explosions = [], this.ctx.clearRect(0, 0, this.width, this.height)) }
-    launch(t = 1) {
-        for (let e = 0; e < t; e++) this.createTrace();
-        this.waitStopRaf || (this.start(), this.waitStop())
+
+    class Fireworks {
+        constructor(target, options = {}) {
+            this.target = target;
+            this.container = target;
+            this.opts = new Options();
+            this.createCanvas(this.target);
+            this.updateOptions(options);
+            this.sound = new Sound(this.opts);
+            this.resize = new Resize(this.opts, this.updateSize.bind(this), this.container);
+            this.mouse = new Mouse(this.opts, this.canvas);
+            this.raf = new Raf(this.opts, this.render.bind(this));
+        }
+        
+        traces = [];
+        explosions = [];
+        waitStopRaf;
+        running = false;
+        
+        get isRunning() {
+            return this.running;
+        }
+        
+        get version() {
+            return "1.1.3";
+        }
+        
+        get currentOptions() {
+            return this.opts;
+        }
+        
+        start() {
+            if (!this.running) {
+                if (!this.canvas.isConnected) {
+                    this.createCanvas(this.target);
+                }
+                this.running = true;
+                this.resize.mount();
+                this.mouse.mount();
+                this.raf.mount();
+            }
+        }
+        
+        stop(removeCanvas = false) {
+            if (this.running) {
+                this.running = false;
+                this.resize.unmount();
+                this.mouse.unmount();
+                this.raf.unmount();
+                this.clear();
+                if (removeCanvas) {
+                    this.canvas.remove();
+                }
+            }
+        }
+        
+        async waitStop(removeCanvas) {
+            if (this.running) {
+                return new Promise(resolve => {
+                    this.waitStopRaf = () => {
+                        if (this.waitStopRaf) {
+                            requestAnimationFrame(this.waitStopRaf);
+                            if (!this.traces.length && !this.explosions.length) {
+                                this.waitStopRaf = null;
+                                this.stop(removeCanvas);
+                                resolve();
+                            }
+                        }
+                    };
+                    this.waitStopRaf();
+                });
+            }
+        }
+        
+        pause() {
+            this.running = !this.running;
+            if (this.running) {
+                this.raf.mount();
+            } else {
+                this.raf.unmount();
+            }
+        }
+        
+        clear() {
+            if (this.ctx) {
+                this.traces = [];
+                this.explosions = [];
+                this.ctx.clearRect(0, 0, this.width, this.height);
+            }
+        }
+        
+        launch(count = 1) {
+            for (let i = 0; i < count; i++) {
+                this.createTrace();
+            }
+            if (!this.waitStopRaf) {
+                this.start();
+                this.waitStop();
+            }
+        }
+        
+        updateOptions(options) {
+            this.opts.update(options);
+        }
+        
+        updateSize({ width = this.container.clientWidth, height = this.container.clientHeight } = {}) {
+            this.width = width;
+            this.height = height;
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.updateBoundaries({ ...this.opts.boundaries, width, height });
+        }
+        
+        updateBoundaries(boundaryOptions) {
+            this.updateOptions({ boundaries: boundaryOptions });
+        }
+        
+        createCanvas(el) {
+            if (el instanceof HTMLCanvasElement) {
+                if (!el.isConnected) {
+                    document.body.append(el);
+                }
+                this.canvas = el;
+            } else {
+                this.canvas = document.createElement("canvas");
+                this.container.append(this.canvas);
+            }
+            this.ctx = this.canvas.getContext("2d");
+            this.updateSize();
+        }
+        
+        render() {
+            if (!this.ctx || !this.running) return;
+            
+            let { opacity, lineStyle, lineWidth } = this.opts;
+            
+            this.ctx.globalCompositeOperation = "destination-out";
+            this.ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
+            this.ctx.fillRect(0, 0, this.width, this.height);
+            
+            this.ctx.globalCompositeOperation = "lighter";
+            this.ctx.lineCap = lineStyle;
+            this.ctx.lineJoin = "round";
+            this.ctx.lineWidth = randomFloat(lineWidth.trace.min, lineWidth.trace.max);
+            
+            this.initTrace();
+            this.drawTrace();
+            this.drawExplosion();
+        }
+        
+        createTrace() {
+            let { hue, rocketsPoint, boundaries, traceLength, traceSpeed, acceleration, mouse } = this.opts;
+            
+            this.traces.push(new Trace({
+                x: this.width * randomInt(rocketsPoint.min, rocketsPoint.max) / 100,
+                y: this.height,
+                dx: (this.mouse.x && mouse.move) || this.mouse.active ? this.mouse.x : randomInt(boundaries.x, boundaries.width - 2 * boundaries.x),
+                dy: (this.mouse.y && mouse.move) || this.mouse.active ? this.mouse.y : randomInt(boundaries.y, 0.5 * boundaries.height),
+                ctx: this.ctx,
+                hue: randomInt(hue.min, hue.max),
+                speed: traceSpeed,
+                acceleration: acceleration,
+                traceLength: absFloor(traceLength)
+            }));
+        }
+        
+        initTrace() {
+            if (this.waitStopRaf) return;
+            
+            let { delay, mouse } = this.opts;
+            
+            if (this.raf.tick > randomInt(delay.min, delay.max) || (this.mouse.active && mouse.max > this.traces.length)) {
+                this.createTrace();
+                this.raf.tick = 0;
+            }
+        }
+        
+        drawTrace() {
+            let i = this.traces.length;
+            while (i--) {
+                this.traces[i].draw();
+                this.traces[i].update((x, y, hue) => {
+                    this.initExplosion(x, y, hue);
+                    this.sound.play();
+                    this.traces.splice(i, 1);
+                });
+            }
+        }
+        
+        initExplosion(x, y, hue) {
+            let { particles, flickering, lineWidth, explosion, brightness, friction, gravity, decay } = this.opts;
+            let count = absFloor(particles);
+            
+            while (count--) {
+                this.explosions.push(new Explosion({
+                    x,
+                    y,
+                    ctx: this.ctx,
+                    hue,
+                    friction,
+                    gravity,
+                    flickering: randomInt(0, 100) <= flickering,
+                    lineWidth: randomFloat(lineWidth.explosion.min, lineWidth.explosion.max),
+                    explosionLength: absFloor(explosion),
+                    brightness,
+                    decay
+                }));
+            }
+        }
+        
+        drawExplosion() {
+            let i = this.explosions.length;
+            while (i--) {
+                this.explosions[i].draw();
+                this.explosions[i].update(() => {
+                    this.explosions.splice(i, 1);
+                });
+            }
+        }
     }
-    updateOptions(t) { this.opts.update(t) }
-    updateSize({ width: t = this.container.clientWidth, height: e = this.container.clientHeight } = {}) { this.width = t, this.height = e, this.canvas.width = t, this.canvas.height = e, this.updateBoundaries({ ...this.opts.boundaries, width: t, height: e }) }
-    updateBoundaries(t) { this.updateOptions({ boundaries: t }) }
-    createCanvas(t) { t instanceof HTMLCanvasElement ? (t.isConnected || document.body.append(t), this.canvas = t) : (this.canvas = document.createElement("canvas"), this.container.append(this.canvas)), this.ctx = this.canvas.getContext("2d"), this.updateSize() }
-    render() {
-        if (!this.ctx || !this.running) return;
-        let { opacity: t, lineStyle: e, lineWidth: i } = this.opts;
-        this.ctx.globalCompositeOperation = "destination-out", this.ctx.fillStyle = `rgba(0, 0, 0, ${t})`, this.ctx.fillRect(0, 0, this.width, this.height), this.ctx.globalCompositeOperation = "lighter", this.ctx.lineCap = e, this.ctx.lineJoin = "round", this.ctx.lineWidth = randomFloat(i.trace.min, i.trace.max), this.initTrace(), this.drawTrace(), this.drawExplosion()
-    }
-    createTrace() {
-        let { hue: t, rocketsPoint: e, boundaries: i, traceLength: s, traceSpeed: r, acceleration: a, mouse: h } = this.opts;
-        this.traces.push(new Trace({ x: this.width * randomInt(e.min, e.max) / 100, y: this.height, dx: this.mouse.x && h.move || this.mouse.active ? this.mouse.x : randomInt(i.x, i.width - 2 * i.x), dy: this.mouse.y && h.move || this.mouse.active ? this.mouse.y : randomInt(i.y, .5 * i.height), ctx: this.ctx, hue: randomInt(t.min, t.max), speed: r, acceleration: a, traceLength: absFloor(s) }))
-    }
-    initTrace() {
-        if (this.waitStopRaf) return;
-        let { delay: t, mouse: e } = this.opts;
-        (this.raf.tick > randomInt(t.min, t.max) || this.mouse.active && e.max > this.traces.length) && (this.createTrace(), this.raf.tick = 0)
-    }
-    drawTrace() {
-        let t = this.traces.length;
-        for (; t--;) this.traces[t].draw(), this.traces[t].update((e, i, s) => { this.initExplosion(e, i, s), this.sound.play(), this.traces.splice(t, 1) })
-    }
-    initExplosion(t, e, i) {
-        let { particles: s, flickering: a, lineWidth: h, explosion: c, brightness: u, friction: l, gravity: d, decay: f } = this.opts, m = absFloor(s);
-        for (; m--;) this.explosions.push(new Explosion({ x: t, y: e, ctx: this.ctx, hue: i, friction: l, gravity: d, flickering: randomInt(0, 100) <= a, lineWidth: randomFloat(h.explosion.min, h.explosion.max), explosionLength: absFloor(c), brightness: u, decay: f }))
-    }
-    drawExplosion() {
-        let t = this.explosions.length;
-        for (; t--;) this.explosions[t].draw(), this.explosions[t].update(() => { this.explosions.splice(t, 1) })
-    }
-}
 
     return Fireworks;
 }));
