@@ -1,6 +1,12 @@
 # Fireworks JS Animation (Pháo Hoa JS) 🎆
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/masax-fireworks-js-animation.svg?style=flat-square)](https://www.npmjs.com/package/masax-fireworks-js-animation)
+[![npm downloads](https://img.shields.io/npm/dt/masax-fireworks-js-animation.svg?style=flat-square)](https://www.npmjs.com/package/masax-fireworks-js-animation)
+[![jsDelivr hits](https://img.shields.io/jsdelivr/npm/hm/masax-fireworks-js-animation?style=flat-square)](https://www.jsdelivr.com/package/npm/masax-fireworks-js-animation)
+[![minzip size](https://img.shields.io/bundlephobia/minzip/masax-fireworks-js-animation?style=flat-square)](https://bundlephobia.com/package/masax-fireworks-js-animation)
+[![install size](https://packagephobia.com/badge?p=masax-fireworks-js-animation&style=flat-square)](https://packagephobia.com/result?p=masax-fireworks-js-animation)
+[![GitHub stars](https://img.shields.io/github/stars/CromBorw2e36/masax-fireworks-js-animation?style=flat-square)](https://github.com/CromBorw2e36/masax-fireworks-js-animation/stargazers)
 
 Một thư viện hiệu ứng pháo hoa nhẹ, không phụ thuộc, và dễ dàng tùy biến. Hoạt động mượt mà trên **Vanilla JS**, **React**, **Vue**, **Angular**, v.v.
 
