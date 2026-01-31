@@ -1,10 +1,13 @@
 {
-  "name": "fireworks-js-animation",
+  "name": "masax-fireworks-js-animation",
   "version": "1.0.0",
   "description": "A lightweight, zero-dependency, and highly customizable fireworks animation library for Vanilla JS, React, Vue, Angular, and more.",
   "main": "dist/fireworks.js",
   "unpkg": "dist/fireworks.min.js",
   "jsdelivr": "dist/fireworks.min.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
