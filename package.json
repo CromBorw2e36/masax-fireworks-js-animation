@@ -10,6 +10,7 @@
     "dist"
   ],
   "scripts": {
+    "build": "copy src\\fireworks.js dist\\fireworks.js && npx terser src/fireworks.js -o dist/fireworks.min.js -c -m --comments /^!/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
