@@ -1,0 +1,32 @@
+{
+  "name": "fireworks-js-animation",
+  "version": "1.0.0",
+  "description": "A lightweight, zero-dependency, and highly customizable fireworks animation library for Vanilla JS, React, Vue, Angular, and more.",
+  "main": "dist/fireworks.js",
+  "unpkg": "dist/fireworks.min.js",
+  "jsdelivr": "dist/fireworks.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "fireworks",
+    "animation",
+    "canvas",
+    "javascript",
+    "react",
+    "vue",
+    "angular",
+    "effects",
+    "particles"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CromBorw2e36/fireworks-js-animation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CromBorw2e36/fireworks-js-animation/issues"
+  },
+  "homepage": "https://github.com/CromBorw2e36/fireworks-js-animation#readme"
+}

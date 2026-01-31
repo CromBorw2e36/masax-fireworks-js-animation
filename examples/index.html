@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks Vanilla JS</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+<body>
+    <img src="https://4kwallpapers.com/images/walls/thumbs_3t/25220.jpg" style="position: absolute; top: 0; left: 0; height: 100vh; width: 100vw; object-fit: cover; z-index: 1;" alt="background">
+    <canvas id="fireworks-canvas" style="position: absolute; top: 0; left: 0; z-index: 1000;"></canvas>
+    
+    <script src="../dist/fireworks.obfuscated.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('fireworks-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const fireworks = new Fireworks(canvas, {
+                hue: { min: 0, max: 360 },
+                acceleration: 1.05,
+                brightness: { min: 50, max: 80 },
+                decay: { min: 0.015, max: 0.03 },
+                delay: { min: 10, max: 30 },
+                explosion: 5,
+                flickering: 50,
+                intensity: 30,
+                friction: 0.95,
+                gravity: 1.5,
+                opacity: 0.5,
+                particles: 50,
+                traceLength: 3,
+                traceSpeed: 10,
+                rocketsPoint: { min: 50, max: 50 },
+                lineWidth: {
+                    explosion: { min: 1, max: 3 },
+                    trace: { min: 1, max: 2 }
+                },
+                mouse: { click: true, move: false, max: 1 }
+            });
+
+            fireworks.start();
+            // fireworks.launch(3); // Launch triggers "waitStop" logic which stops the loop. Removing this enables continuous auto-firing.
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                fireworks.updateSize();
+            });
+        });
+    </script>
+</body>
+</html>
