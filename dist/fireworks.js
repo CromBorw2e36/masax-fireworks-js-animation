@@ -10,7 +10,7 @@
  * - ES6 class-based architecture with modular design
  * 
  * @author Masax
- * @version 1.1.3
+ * @version 1.1.4
  * @license MIT
  */
 (function (root, factory) {
@@ -373,7 +373,7 @@
         }
         
         get version() {
-            return "1.1.3";
+            return "1.1.4";
         }
         
         get currentOptions() {
