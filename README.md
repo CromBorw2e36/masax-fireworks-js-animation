@@ -371,4 +371,4 @@ canvas#fireworks-canvas {
 
 ## License
 
-UNLICENSED
+MIT

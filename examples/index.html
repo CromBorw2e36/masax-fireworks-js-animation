@@ -3,48 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fireworks Vanilla JS</title>
+    <title>Fireworks JS - Full Features Demo</title>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; background: #111; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         canvas { display: block; position: absolute; top: 0; left: 0; }
+        
+        /* GUI Container positioning */
+        .dg.ac { z-index: 3000 !important; }
+
+        /* Custom controls overlay */
+        .controls-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 2500;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .status {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 5px;
+            padding-left: 5px;
+        }
     </style>
 </head>
 <body>
-    <img src="https://4kwallpapers.com/images/walls/thumbs_3t/25220.jpg" style="position: absolute; top: 0; left: 0; height: 100vh; width: 100vw; object-fit: cover; z-index: 1;" alt="background">
     <canvas id="fireworks-canvas" style="position: absolute; top: 0; left: 0; z-index: 1000;"></canvas>
     
-    <script src="../dist/fireworks.obfuscated.js"></script>
+    <div class="controls-overlay">
+        <div class="btn-group">
+            <button id="btn-start">Start / Resume</button>
+            <button id="btn-pause">Pause</button>
+            <button id="btn-stop">Stop</button>
+            <button id="btn-clear">Clear Canvas</button>
+        </div>
+        <div class="btn-group">
+            <button id="btn-launch-small">Launch (Small)</button>
+            <button id="btn-launch-big">Launch (Big)</button>
+        </div>
+        <div id="status-text" class="status">Status: Ready</div>
+    </div>
+
+    <!-- Load the library -->
+    <script src="../dist/fireworks.js"></script>
+    <!-- Load dat.gui for controls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('fireworks-canvas');
+            const statusText = document.getElementById('status-text');
+
+            // Initial full size
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
+            // Initialize Fireworks
             const fireworks = new Fireworks(canvas, {
                 hue: { min: 0, max: 360 },
-                acceleration: 1.05,
-                brightness: { min: 50, max: 80 },
-                decay: { min: 0.015, max: 0.03 },
-                delay: { min: 10, max: 30 },
-                explosion: 5,
-                flickering: 50,
-                intensity: 30,
-                friction: 0.95,
-                gravity: 1.5,
-                opacity: 0.5,
                 particles: 50,
-                traceLength: 3,
                 traceSpeed: 10,
-                rocketsPoint: { min: 50, max: 50 },
-                lineWidth: {
-                    explosion: { min: 1, max: 3 },
-                    trace: { min: 1, max: 2 }
-                },
-                mouse: { click: true, move: false, max: 1 }
+                autoresize: true,
+                mouse: { click: true, move: false, max: 3 }
             });
 
             fireworks.start();
-            // fireworks.launch(3); // Launch triggers "waitStop" logic which stops the loop. Removing this enables continuous auto-firing.
+            statusText.textContent = "Status: Running";
+
+            // --- Setup dat.GUI ---
+            const gui = new dat.GUI({ width: 320 });
+            
+            // Configuration Object mirroring the options
+            const config = {
+                // Core
+                autoresize: true,
+                opacity: 0.5,
+                acceleration: 1.05,
+                friction: 0.95,
+                gravity: 1.5,
+                particles: 50,
+                explosion: 5,
+                
+                // Visuals
+                intensity: 30,
+                flickering: 50,
+                lineStyle: 'round',
+                
+                // Colors
+                hueMin: 0,
+                hueMax: 360,
+                brightnessMin: 50,
+                brightnessMax: 80,
+                
+                // Traces
+                traceLength: 3,
+                traceSpeed: 10,
+                
+                // Dimensions / Decay
+                decayMin: 0.015,
+                decayMax: 0.03,
+                delayMin: 10,
+                delayMax: 30,
+                
+                // Positioning
+                rocketsPointMin: 50,
+                rocketsPointMax: 50,
+                
+                // Line Widths
+                lwExplosionMin: 1,
+                lwExplosionMax: 3,
+                lwTraceMin: 1,
+                lwTraceMax: 2,
+                
+                // Mouse
+                mouseClick: true,
+                mouseMove: false,
+                mouseMax: 1,
+                
+                // Sound
+                soundEnabled: false,
+                volumeMin: 4,
+                volumeMax: 8
+            };
+
+            // Helper to update options when GUI changes
+            const updateOptions = () => {
+                fireworks.updateOptions({
+                    autoresize: config.autoresize,
+                    opacity: config.opacity,
+                    acceleration: config.acceleration,
+                    friction: config.friction,
+                    gravity: config.gravity,
+                    particles: config.particles,
+                    explosion: config.explosion,
+                    intensity: config.intensity,
+                    flickering: config.flickering,
+                    lineStyle: config.lineStyle,
+                    hue: { min: config.hueMin, max: config.hueMax },
+                    brightness: { min: config.brightnessMin, max: config.brightnessMax },
+                    traceLength: config.traceLength,
+                    traceSpeed: config.traceSpeed,
+                    decay: { min: config.decayMin, max: config.decayMax },
+                    delay: { min: config.delayMin, max: config.delayMax },
+                    rocketsPoint: { min: config.rocketsPointMin, max: config.rocketsPointMax },
+                    lineWidth: {
+                        explosion: { min: config.lwExplosionMin, max: config.lwExplosionMax },
+                        trace: { min: config.lwTraceMin, max: config.lwTraceMax }
+                    },
+                    mouse: { click: config.mouseClick, move: config.mouseMove, max: config.mouseMax },
+                    sound: { 
+                        enabled: config.soundEnabled, 
+                        volume: { min: config.volumeMin, max: config.volumeMax },
+                        files: ["explosion0.mp3", "explosion1.mp3", "explosion2.mp3"] // Keeping defaults
+                    }
+                });
+            };
+
+            // --- GUI Folders ---
+            
+            const f1 = gui.addFolder('Physics & Core');
+            f1.add(config, 'autoresize').onChange(updateOptions);
+            f1.add(config, 'gravity', 0, 10).step(0.1).onChange(updateOptions);
+            f1.add(config, 'friction', 0.5, 3).step(0.01).onChange(updateOptions);
+            f1.add(config, 'acceleration', 0.5, 3).step(0.01).onChange(updateOptions);
+            f1.add(config, 'particles', 1, 200).step(1).onChange(updateOptions);
+            f1.add(config, 'explosion', 1, 50).step(1).name('Explosion Length').onChange(updateOptions);
+            f1.open();
+
+            const f2 = gui.addFolder('Visuals & Colors');
+            f2.add(config, 'opacity', 0, 1).step(0.05).name('Trace Opacity').onChange(updateOptions);
+            f2.add(config, 'intensity', 0, 100).onChange(updateOptions);
+            f2.add(config, 'flickering', 0, 100).name('Flicker Chance %').onChange(updateOptions);
+            f2.add(config, 'lineStyle', ['round', 'square']).onChange(updateOptions);
+            
+            f2.add(config, 'hueMin', 0, 360).name('Hue Min').onChange(updateOptions);
+            f2.add(config, 'hueMax', 0, 360).name('Hue Max').onChange(updateOptions);
+            f2.add(config, 'brightnessMin', 0, 100).onChange(updateOptions);
+            f2.add(config, 'brightnessMax', 0, 100).onChange(updateOptions);
+            f2.open();
+
+            const f3 = gui.addFolder('Trace Settings');
+            f3.add(config, 'traceLength', 1, 20).onChange(updateOptions);
+            f3.add(config, 'traceSpeed', 1, 50).onChange(updateOptions);
+            f3.add(config, 'lwTraceMin', 0.1, 10).name('Trace Width Min').onChange(updateOptions);
+            f3.add(config, 'lwTraceMax', 0.1, 10).name('Trace Width Max').onChange(updateOptions);
+            f3.add(config, 'lwExplosionMin', 0.1, 10).name('Explosion Width Min').onChange(updateOptions);
+            f3.add(config, 'lwExplosionMax', 0.1, 10).name('Explosion Width Max').onChange(updateOptions);
+
+            const f4 = gui.addFolder('Timing & Launch');
+            f4.add(config, 'delayMin', 1, 100).name('Delay Min (ticks)').onChange(updateOptions);
+            f4.add(config, 'delayMax', 1, 100).name('Delay Max (ticks)').onChange(updateOptions);
+            f4.add(config, 'decayMin', 0.001, 0.1).step(0.001).onChange(updateOptions);
+            f4.add(config, 'decayMax', 0.001, 0.1).step(0.001).onChange(updateOptions);
+            f4.add(config, 'rocketsPointMin', 0, 100).name('Launch Pos Min %').onChange(updateOptions);
+            f4.add(config, 'rocketsPointMax', 0, 100).name('Launch Pos Max %').onChange(updateOptions);
+
+            const f5 = gui.addFolder('Mouse Interaction');
+            f5.add(config, 'mouseClick').name('Click to Fire').onChange(updateOptions);
+            f5.add(config, 'mouseMove').name('Follow Mouse').onChange(updateOptions);
+            f5.add(config, 'mouseMax', 1, 20).step(1).name('Max Mouse Rockets').onChange(updateOptions);
+
+            const f6 = gui.addFolder('Sound');
+            f6.add(config, 'soundEnabled').name('Enable Sound').onChange(updateOptions);
+            f6.add(config, 'volumeMin', 0, 100).onChange(updateOptions);
+            f6.add(config, 'volumeMax', 0, 100).onChange(updateOptions);
+            
+            // --- Buttons ---
+            document.getElementById('btn-start').addEventListener('click', () => {
+                fireworks.start();
+                statusText.textContent = "Status: Running";
+            });
+            
+            document.getElementById('btn-pause').addEventListener('click', () => {
+                fireworks.pause();
+                statusText.textContent = fireworks.isRunning ? "Status: Running" : "Status: Paused";
+            });
+            
+            document.getElementById('btn-stop').addEventListener('click', () => {
+                fireworks.stop();
+                statusText.textContent = "Status: Stopped";
+            });
+            
+            document.getElementById('btn-clear').addEventListener('click', () => {
+                fireworks.clear();
+            });
+            
+            document.getElementById('btn-launch-small').addEventListener('click', () => {
+                fireworks.launch(5);
+            });
+            
+            document.getElementById('btn-launch-big').addEventListener('click', () => {
+                fireworks.launch(20);
+            });
 
             // Handle window resize
             window.addEventListener('resize', () => {
