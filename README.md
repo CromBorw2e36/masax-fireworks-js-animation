@@ -16,6 +16,8 @@ A lightweight, zero-dependency, and highly customizable fireworks animation libr
 
 ![Screenshot](./media/demo.png)
 
+### [👉 Live Demo / Xem Demo / 在线演示](https://cromborw2e36.github.io/masax-fireworks-js-animation/)
+
 ---
 
 ## 🌍 Ngôn ngữ / Languages / 语言
