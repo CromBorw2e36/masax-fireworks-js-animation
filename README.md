@@ -1,4 +1,4 @@
-# Fireworks JS Animation (Pháo Hoa JS) 🎆
+# Fireworks JS Animation
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
 [![npm version](https://img.shields.io/npm/v/masax-fireworks-js-animation.svg?style=flat-square)](https://www.npmjs.com/package/masax-fireworks-js-animation)
